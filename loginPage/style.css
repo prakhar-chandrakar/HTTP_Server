@@ -1,0 +1,86 @@
+body {
+    margin: 0;
+    padding: 0;
+    margin-top: -10px;
+    overflow: hidden;
+    background-color: #db8e8e;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100vw;
+}
+
+.login-form {
+    display: flex;
+    padding: 15px;
+    background-color: #9c0d0d;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border: 1.5px solid #000000;
+}
+
+.label {
+    margin-bottom: 5px;
+    color: #000000;
+}
+
+.form-header {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    gap: 10px;
+    text-align: center;
+    background-color: #9c0d0d;
+    border-radius: 5px 5px 0 0;
+}
+
+.form-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    gap: 10px;
+}
+
+#userLable {
+   margin-top: -3px;
+}
+
+#passLable {
+    padding-top: 5px;
+}
+
+#userLable,
+#passLable {
+    font-size: 19px;
+    color: #000000;
+    display: block;
+}
+
+#submitButton {
+    margin-top: 5px;
+    background-color: #9c0d0d;
+    justify-content: right;
+    align-items: right;
+    border: 1.5px solid #000000;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100px;
+}
+
+#username, #password {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: #dea5a5;
+    border: 1px solid #000000; 
+    color: #000000; 
+}
+
+#username::placeholder,
+#password::placeholder {
+    color: #000000;
+}

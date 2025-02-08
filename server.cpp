@@ -3,12 +3,31 @@
 #include <iostream>
 #include <WinSock2.h>
 #include <string.h>
+#include <fstream>
+#include <sstream>
+#include <regex>
 
 using namespace std;
 
+string extractRequestData(const string &requestBody)
+{
+    // Define a regex pattern to match the username and password
+    regex pattern("\\{\"username\":\"([^\"]+)\",\"password\":\"([^\"]+)\"\\}");
+    smatch matches;
+    if (std::regex_search(requestBody, matches, pattern))
+    {
+
+        string username = matches[1];
+        string password = matches[2];
+        string resp = (username == "prakhar" && password == "prakhar") ? "Login successful" : "Login failed";
+        cout << "-> Response : " << resp << endl;
+        return resp;
+    }
+}
+
 int main()
 {
-    cout << " Attempting to create a server" << endl;
+    cout << "\n-> Attempting to create a server... " << endl;
     SOCKET wsocket;
     SOCKET new_wsocket;
     WSADATA wsaData; // to hold windows socket information
@@ -47,7 +66,8 @@ int main()
     {
         cout << "Socket listen failed with error code: " << WSAGetLastError();
     }
-    cout << " Server successfully created, listening on " << serverIp << ":" << port << endl;
+    cout << "-> Server successfully created, listening on " << serverIp << ":" << port << endl
+         << endl;
 
     int bytes = 0;
     while (true)
@@ -56,20 +76,54 @@ int main()
         new_wsocket = accept(wsocket, (SOCKADDR *)&server, &server_len);
         if (new_wsocket == INVALID_SOCKET)
         {
-            cout << " Could not accept socket connection";
+            cout << "Could not accept socket connection";
         }
-        cout << " Received request from client" << endl;
 
         // read client request
-        char buff[30720] = {0};
-        bytes = recv(new_wsocket, buff, BUFFER_SIZE, 0);
+        char buffer[BUFFER_SIZE] = {0};
+        bytes = recv(new_wsocket, buffer, BUFFER_SIZE, 0);
         if (bytes < 0)
         {
-            cout << "coud not read form client request";
+            cout << "Coud not read form client request";
         }
 
-        string serverMessage = "HTTP/1.1 200 OK\ncontent-Type: text/html\nContent-Length: ";
-        string response = "<html><h1>Hello World</h1></html>";
+        string request(buffer);
+
+        if (request.find("OPTIONS") == 0)
+        {
+            cout << "-> Received preflight OPTIONS request, responding CORS allowed\n";
+            string optionsResponse =
+                "HTTP/1.1 204 No Content\r\n"
+                "Access-Control-Allow-Origin: *\r\n"
+                "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+                "Access-Control-Allow-Headers: Content-Type\r\n"
+                "Content-Length: 0\r\n"
+                "\r\n";
+
+            send(new_wsocket, optionsResponse.c_str(), optionsResponse.size(), 0);
+            closesocket(new_wsocket);
+            continue;
+        }
+
+        cout << "-> Received actual request from client\n\n";
+        // cout << "-> Client request : \n" << request << endl;
+        string response;
+        size_t bodyStart = request.find("\r\n\r\n");
+        if (bodyStart != string::npos)
+        {
+            string requestBody = request.substr(bodyStart + 4);
+            cout << "-> Request Body: " << requestBody << endl;
+            response = extractRequestData(requestBody);
+        }
+
+        string serverMessage =
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Access-Control-Allow-Origin: *\r\n"
+            "Access-Control-Allow-Methods: POST, GET, OPTIONS\r\n"
+            "Access-Control-Allow-Headers: Content-Type\r\n"
+            "Content-Length: ";
+
         serverMessage.append(to_string(response.size()));
         serverMessage.append(("\n\n"));
         serverMessage.append(response);
@@ -82,11 +136,11 @@ int main()
             bytesSent = send(new_wsocket, serverMessage.c_str(), serverMessage.size(), 0);
             if (bytesSent < 0)
             {
-                cout << " Could not send response";
+                cout << "Could not send response";
             }
             totalBytesSent += bytesSent;
         }
-        cout << " Sent response to client" << endl;
+        cout << "\n-> Sent response back to client" << endl;
         closesocket(new_wsocket);
     }
     closesocket(wsocket);

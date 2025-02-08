@@ -1,1 +1,1 @@
- cd "c:\Users\prakh\Desktop\Projects\MyOwnWebServer\" ; if ($?) { g++ server.cpp -o server  -lws2_32} ; if ($?) { .\server }
+ cd "C:\Users\prakh\Desktop\Projects\HTTP_Server" ; if ($?) { g++ server.cpp -o server  -lws2_32} ; if ($?) { .\server }
